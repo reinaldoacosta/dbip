@@ -1,5 +1,5 @@
 {
-    "name": "reinaldo/dbip-lookup",
+    "name": "reinaldoacosta/dbip",
     "description": "DB-IP.COM look up package",
     "type": "library",
     "require": {},
