@@ -1,0 +1,12 @@
+{
+    "name": "reinaldo/dbip-lookup",
+    "description": "DB-IP.COM look up package",
+    "type": "library",
+    "require": {},
+    "autoload": {
+        "files": [
+            "src/dbip-update.php",
+            "src/dbip.class.php"
+        ]
+    }
+}
