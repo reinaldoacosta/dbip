@@ -4,9 +4,9 @@
     "type": "library",
     "require": {},
     "autoload": {
-        "files": [
-            "src/dbip-update.php",
-            "src/dbip.class.php"
-        ]
-    }
+        "psr-4": {
+            "Dbip\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
 }

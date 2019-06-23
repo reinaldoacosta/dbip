@@ -23,10 +23,13 @@
  *
  */
 
+namespace Dbip;
+
 const API_BASE = "https://db-ip.com/account";
 const DEFAULT_CONF = "dbip-update.ini";
 
-function apiRequest($path, $key) {
+function apiRequest($path, $key)
+{
 	$url = API_BASE . "/" . $key . "/db" . $path;
 	if (($jsonData = file_get_contents($url)) === false) {
 		throw new Exception("cannot fetch API result from {$url}");
@@ -38,7 +41,8 @@ function apiRequest($path, $key) {
 	return $resp;
 }
 
-function vEcho($s) {
+function vEcho($s)
+{
 	if (!$GLOBALS["verbose"]) {
 		return false;
 	}
@@ -197,7 +201,7 @@ try {
 	}
 
 	vEcho("Starting update for {$dbType} ({$fileInfo->date})\n");
-	if (!copy($sourcePrefix . $fileInfo->url, $outputTempFile, stream_context_create([], [ "notification" => function($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) {
+	if (!copy($sourcePrefix . $fileInfo->url, $outputTempFile, stream_context_create([], ["notification" => function ($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) {
 		static $totBytes, $prevPct = false;
 		if ($bytesMax) {
 			$totBytes = $bytesMax;
@@ -245,23 +249,42 @@ try {
 			$relId .= "-v{$fileInfo->version}";
 		}
 		switch ($relId) {
-			case "ip-to-country-lite":	$importType = DBIP::TYPE_COUNTRY_LITE;	break;
-			case "ip-to-city-lite":		$importType = DBIP::TYPE_CITY_LITE;		break;
-			case "ip-to-country-v3":	$importType = DBIP::TYPE_COUNTRY_V3;	break;
-			case "ip-to-location-v3":	$importType = DBIP::TYPE_LOCATION_V3;	break;
-			case "ip-to-isp-v3":		$importType = DBIP::TYPE_ISP_V3;		break;
+			case "ip-to-country-lite":
+				$importType = DBIP::TYPE_COUNTRY_LITE;
+				break;
+			case "ip-to-city-lite":
+				$importType = DBIP::TYPE_CITY_LITE;
+				break;
+			case "ip-to-country-v3":
+				$importType = DBIP::TYPE_COUNTRY_V3;
+				break;
+			case "ip-to-location-v3":
+				$importType = DBIP::TYPE_LOCATION_V3;
+				break;
+			case "ip-to-isp-v3":
+				$importType = DBIP::TYPE_ISP_V3;
+				break;
 			case "ip-to-location-isp-v3":
-			case "ip-to-full-v3":		$importType = DBIP::TYPE_FULL_V3;		break;
-			case "ip-to-location-v2":	$importType = DBIP::TYPE_LOCATION_V2;	break;
-			case "ip-to-isp-v2":		$importType = DBIP::TYPE_ISP_V2;		break;
+			case "ip-to-full-v3":
+				$importType = DBIP::TYPE_FULL_V3;
+				break;
+			case "ip-to-location-v2":
+				$importType = DBIP::TYPE_LOCATION_V2;
+				break;
+			case "ip-to-isp-v2":
+				$importType = DBIP::TYPE_ISP_V2;
+				break;
 			case "ip-to-location-isp-v2":
-			case "ip-to-full-v2":		$importType = DBIP::TYPE_FULL_V2;		break;
-			default:					throw new Exception("unsupported database type");
+			case "ip-to-full-v2":
+				$importType = DBIP::TYPE_FULL_V2;
+				break;
+			default:
+				throw new Exception("unsupported database type");
 		}
 		$tempTable = "dbip_update_" . time();
 		$db->exec("drop table if exists `{$tempTable}`");
 		$db->exec("create table `{$tempTable}` like `{$dbTable}`");
-		$dbip->importFromCsv($outputTempFile, $importType, $tempTable, function($numRows) use ($fileInfo) {
+		$dbip->importFromCsv($outputTempFile, $importType, $tempTable, function ($numRows) use ($fileInfo) {
 			if ($numRows % 1000) {
 				return false;
 			}
@@ -281,7 +304,6 @@ try {
 		}
 		vEcho("Wrote {$outputFile}\n");
 	}
-
 } catch (Exception $e) {
 	if ($stdErr = @fopen("php://stderr", "w")) {
 		fwrite($stdErr, "ERROR: {$e->getMessage()}\n");
