@@ -106,7 +106,10 @@ try {
 
 	if (!isset($opts["d"])) {
 		$dbList = apiRequest("/", $apiKey);
-		if (count((array)$dbList) > 1) {
+		$listCount = count((array)$dbList);
+		if ($listCount == 0) {
+			throw new Exception("No access to any database (got empty list)");
+		} else if ($listCount > 1) {
 			vEcho("Use -d to select a database type :\n");
 			foreach ($dbList as $dbType => $dbInfo) {
 				echo $dbType . "\n";
@@ -199,6 +202,34 @@ try {
 	} else if (!isset($db) && file_exists($outputFile) && !isset($opts["w"])) {
 		throw new Exception("destination file {$outputFile} already exists, use -w to force overwrite");
 	}
+	
+	$checkPrefix = $uncompress ? "" : "compress.zlib://";
+	if (file_exists($checkPrefix . $outputFile)) {
+		if (isset($fileInfo->md5sum) || isset($fileInfo->sha1sum)) {
+			vEcho("Check signature: ");
+			$match = true;
+			if ($match && isset($fileInfo->md5sum)) {
+				vEcho("[MD5] ");
+				$md5sum = md5_file($checkPrefix . $outputFile);
+				if ($md5sum !== $fileInfo->md5sum) {
+					$match = false;
+				}
+			}
+			if ($match && isset($fileInfo->sha1sum)) {
+				vEcho("[SHA1] ");
+				$sha1sum = sha1_file($checkPrefix . $outputFile);
+				if ($sha1sum !== $fileInfo->sha1sum) {
+					$match = false;
+				}
+			}
+			if ($match) {
+				vEcho("match, no need to download\n");
+				exit();
+			} else {
+				vEcho("mismatch, download needed\n");
+			}
+		}
+	}
 
 	vEcho("Starting update for {$dbType} ({$fileInfo->date})\n");
 	if (!copy($sourcePrefix . $fileInfo->url, $outputTempFile, stream_context_create([], ["notification" => function ($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) {
@@ -220,7 +251,6 @@ try {
 	}
 	vEcho("\rDownload completed: " . number_format(filesize($outputTempFile) / 1024, 1) . " KB\n");
 
-	$checkPrefix = $uncompress ? "" : "compress.zlib://";
 	if (isset($fileInfo->md5sum) || isset($fileInfo->sha1sum)) {
 		vEcho("Verify signature: ");
 		if (isset($fileInfo->md5sum)) {
